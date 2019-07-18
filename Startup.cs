@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Extensions.Configuration.AzureKeyVault;
+using System;
 
 [assembly: FunctionsStartup(typeof(Hollan.Function.Startup))]
 
@@ -21,29 +22,14 @@ namespace Hollan.Function
     public class CosmosClientFactory
     {
         private CosmosClient _client;
-        private readonly IConfigurationRoot _config;
-        public CosmosClientFactory(IConfiguration config)
-        {
-            var azureServiceTokenProvider = new AzureServiceTokenProvider();
-
-            var keyVaultClient = new KeyVaultClient(
-                    new KeyVaultClient.AuthenticationCallback(
-                        azureServiceTokenProvider.KeyVaultTokenCallback));
-
-            _config = new ConfigurationBuilder()
-                .AddConfiguration(config)
-                .AddAzureKeyVault($"https://{config["KeyVaultName"]}.vault.azure.net/", 
-                    keyVaultClient,
-                    new DefaultKeyVaultSecretManager())
-                .Build();
-        }
-
         public CosmosClient GetClient()
         {
             if(_client == null)
             {
-                var connectionString = _config["CosmosDbConnectionString"];
-                _client = new CosmosClient(connectionString);
+                // Could use local.settings.json value when debugging locally
+                // or pull from Key Vault when running in cloud using this feature:
+                // https://docs.microsoft.com/en-us/azure/app-service/app-service-key-vault-references
+                _client = new CosmosClient(Environment.GetEnvironmentVariable("CosmosDbConnectionString"));
             }
             return _client;
         }
