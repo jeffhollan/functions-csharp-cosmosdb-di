@@ -22,6 +22,11 @@ namespace Hollan.Function
     public class CosmosClientFactory
     {
         private CosmosClient _client;
+
+        public CosmosClientFactory(IConfiguration configuration)
+        {
+            
+        }
         public CosmosClient GetClient()
         {
             if(_client == null)
